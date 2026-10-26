@@ -1,0 +1,8 @@
+-r requirements.txt
+-r requirements-mhe.txt
+pytest==8.3.3
+aiosmtpd==1.4.6
+moto[s3]==5.2.4          # emulated AWS S3 for the storage tests
+pgserver==0.1.4          # throw-away real PostgreSQL for the migration tests
+pip-audit
+bandit

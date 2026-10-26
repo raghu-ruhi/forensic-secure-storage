@@ -1,0 +1,42 @@
+# PRODUCTION-style stack for an EC2 host: evidence in a private S3 bucket (instance ROLE, no keys),
+# PostgreSQL outside the compose file (e.g. Amazon RDS). NOT deployed or tested by the authors of this
+# change - it needs your AWS account. Use together with docs/AWS_S3_EC2.md:
+#     docker compose -f docker-compose.prod.yml --env-file .env up -d --build
+# Required in .env: SECRET_KEY, JWT_SECRET_KEY, DATABASE_URL (postgresql://...), S3_BUCKET, AWS_REGION,
+# MAIL_*, FLASK_ENV=production, STORAGE_BACKEND=s3
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: true
+    environment:
+      FLASK_ENV: production
+      STORAGE_BACKEND: s3
+      STORAGE_PATH: /app/storage            # holds ONLY master.key and temp files; S3 holds the evidence
+    volumes:
+      - forensic_keys:/app/storage          # master.key MUST be backed up: without it evidence is unrecoverable
+    ports:
+      - "127.0.0.1:5000:5000"               # reachable only through the host's Nginx/ALB, never the internet directly
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5173:80"
+
+volumes:
+  forensic_keys:

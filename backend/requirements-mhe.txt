@@ -1,0 +1,4 @@
+# OPTIONAL: multiparty homomorphic encryption (app/services/mhe_service.py).
+# The wheel below is built for Linux/glibc 2.39 (Ubuntu 24.04) + CPython 3.12.
+# Binary compatibility with the python:3.12-slim (Debian 12) Docker image has NOT been verified.
+openfhe==1.5.1.0.24.4

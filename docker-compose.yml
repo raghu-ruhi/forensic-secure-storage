@@ -1,0 +1,83 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: forensic_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: forensic_db
+      POSTGRES_USER: forensic_user
+      POSTGRES_PASSWORD: StrongPass123!
+    volumes:
+      - forensic_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forensic_user -d forensic_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    container_name: forensic_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    # ONE canonical settings file: .env in the project root (next to this
+    # file). Copy .env.example to .env and fill it in. Its values reach the
+    # backend container here, via env_file - this is what delivers MAIL_*,
+    # SECRET_KEY, JWT_SECRET_KEY, ADMIN_* to Flask.
+    #
+    # (Before this fix the README told you to edit the root .env, but this
+    # file only read backend/.env - which does not exist in the repo - so the
+    # SMTP settings never reached the container and no OTP e-mail was ever
+    # sent.) backend/.env is still honoured if present and wins over the root
+    # file, for people who already have credentials there. Needs Docker
+    # Compose >= 2.24 (`docker compose version`).
+    env_file:
+      - path: .env
+        required: false
+      - path: backend/.env
+        required: false
+    environment:
+      # These must always point at the Docker network, not developer
+      # machine values that might be sitting in backend/.env, so they stay
+      # as explicit overrides (env_file values are used as defaults;
+      # anything repeated here wins).
+      DATABASE_URL: postgresql://forensic_user:StrongPass123!@db:5432/forensic_db
+      STORAGE_PATH: /app/storage
+      MASTER_KEY_PATH: /app/storage/master.key
+      NODE_A_PATH: /app/storage/node_a
+      NODE_B_PATH: /app/storage/node_b
+      NODE_C_PATH: /app/storage/node_c
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173,http://127.0.0.1:5173}
+    volumes:
+      - forensic_storage:/app/storage
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    ports:
+      - "5000:5000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:5000/api}
+    container_name: forensic_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  forensic_pgdata:
+  forensic_storage:

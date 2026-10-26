@@ -1,0 +1,17 @@
+**/node_modules
+**/__pycache__
+**/*.pyc
+**/dist
+**/.venv
+**/venv
+**/*.db
+**/instance
+**/storage/uploads
+**/storage/reports
+**/storage/node_a
+**/storage/node_b
+**/storage/node_c
+**/.env
+.git
+**/.env.*
+!**/.env.example

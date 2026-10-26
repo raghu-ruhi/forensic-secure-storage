@@ -1,0 +1,263 @@
+{
+  "info": {
+    "name": "Forensic Secure Storage API",
+    "description": "Full API collection for the DFA-AOKGE-inspired Digital Forensic Secure Storage backend. Import into Postman, set the {{baseUrl}} and {{token}} collection variables, and run requests in order for a full demo flow.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api" },
+    { "key": "token", "value": "" },
+    { "key": "evidenceId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Jane Investigator\",\n  \"email\": \"jane@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"investigator\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane@example.com\",\n  \"otp_code\": \"000000\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/verify-otp", "host": ["{{baseUrl}}"], "path": ["auth", "verify-otp"] }
+          }
+        },
+        {
+          "name": "Resend OTP",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"jane@example.com\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/resend-otp", "host": ["{{baseUrl}}"], "path": ["auth", "resend-otp"] }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Get Current User (Me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Evidence",
+      "item": [
+        {
+          "name": "Upload Evidence",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "case_number", "value": "CASE-2026-001", "type": "text" },
+                { "key": "title", "value": "Suspect laptop RAM dump", "type": "text" },
+                { "key": "description", "value": "Captured during raid", "type": "text" },
+                { "key": "file", "type": "file", "src": "" }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/evidence/upload", "host": ["{{baseUrl}}"], "path": ["evidence", "upload"] }
+          }
+        },
+        {
+          "name": "List Evidence",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/evidence", "host": ["{{baseUrl}}"], "path": ["evidence"] }
+          }
+        },
+        {
+          "name": "Get Evidence Detail",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/evidence/{{evidenceId}}", "host": ["{{baseUrl}}"], "path": ["evidence", "{{evidenceId}}"] }
+          }
+        },
+        {
+          "name": "Verify Evidence Integrity",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/evidence/{{evidenceId}}/verify", "host": ["{{baseUrl}}"], "path": ["evidence", "{{evidenceId}}", "verify"] }
+          }
+        },
+        {
+          "name": "Get Evidence Ledger",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/evidence/{{evidenceId}}/ledger", "host": ["{{baseUrl}}"], "path": ["evidence", "{{evidenceId}}", "ledger"] }
+          }
+        },
+        {
+          "name": "Check Peer Node Consistency",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/evidence/{{evidenceId}}/nodes", "host": ["{{baseUrl}}"], "path": ["evidence", "{{evidenceId}}", "nodes"] }
+          }
+        },
+        {
+          "name": "Rotate Encryption Key",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/evidence/{{evidenceId}}/rotate-key", "host": ["{{baseUrl}}"], "path": ["evidence", "{{evidenceId}}", "rotate-key"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Digital Signatures",
+      "item": [
+        {
+          "name": "Sign Evidence",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/signatures/{{evidenceId}}/sign", "host": ["{{baseUrl}}"], "path": ["signatures", "{{evidenceId}}", "sign"] }
+          }
+        },
+        {
+          "name": "Verify Signatures",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/signatures/{{evidenceId}}/verify", "host": ["{{baseUrl}}"], "path": ["signatures", "{{evidenceId}}", "verify"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "MFA",
+      "item": [
+        {
+          "name": "Setup MFA",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/mfa/setup", "host": ["{{baseUrl}}"], "path": ["mfa", "setup"] }
+          }
+        },
+        {
+          "name": "Confirm MFA",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"totp_code\": \"123456\"\n}" },
+            "url": { "raw": "{{baseUrl}}/mfa/confirm", "host": ["{{baseUrl}}"], "path": ["mfa", "confirm"] }
+          }
+        },
+        {
+          "name": "Disable MFA",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"totp_code\": \"123456\"\n}" },
+            "url": { "raw": "{{baseUrl}}/mfa/disable", "host": ["{{baseUrl}}"], "path": ["mfa", "disable"] }
+          }
+        },
+        {
+          "name": "Verify Backup Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"backup_code\": \"abcd1234\"\n}" },
+            "url": { "raw": "{{baseUrl}}/mfa/verify-backup-code", "host": ["{{baseUrl}}"], "path": ["mfa", "verify-backup-code"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Download PDF Report",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/reports/{{evidenceId}}", "host": ["{{baseUrl}}"], "path": ["reports", "{{evidenceId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Audit Logs",
+      "item": [
+        {
+          "name": "List All Audit Logs (Admin Only)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/audit-logs?limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["audit-logs"],
+              "query": [{ "key": "limit", "value": "100" }]
+            }
+          }
+        },
+        {
+          "name": "List Audit Logs for Evidence",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/audit-logs/evidence/{{evidenceId}}", "host": ["{{baseUrl}}"], "path": ["audit-logs", "evidence", "{{evidenceId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          }
+        }
+      ]
+    }
+  ]
+}
